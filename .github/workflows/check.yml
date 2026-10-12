@@ -1,0 +1,13 @@
+name: Checks
+on: [push, pull_request]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check Python and shell syntax
+        run: |
+          python3 -m py_compile panel.py install.py
+          sh -n install.sh dx-light
+      - name: Check installation and exclusive mode switching
+        run: python3 -m unittest discover -s tests -v

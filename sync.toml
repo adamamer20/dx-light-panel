@@ -1,0 +1,14 @@
+# Tested 65-LED layout. The primary X11 monitor is selected automatically.
+top = 31
+left = 17
+right = 17
+cap_w = 80
+cap_h = 45
+border = 3
+fps = 30
+brightness = 128
+smoothing = 0.15
+saturation = 1.2
+gamma = 1.0
+# For multiple monitors, uncomment and set a name from quiklight --list-monitors:
+# monitor = "DP-1"

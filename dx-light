@@ -1,0 +1,33 @@
+#!/bin/sh
+# SPDX-License-Identifier: MIT
+set -eu
+data_dir="${XDG_DATA_HOME:-$HOME/.local/share}/dx-light-panel"
+config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/dx-light-panel"
+case "${1:-ui}" in
+    ui) exec /usr/bin/python3 "$data_dir/panel.py" ;;
+    color|sync|off) ;;
+    status)
+        exec systemctl --user --no-pager status dx-light-color.service dx-light-sync.service
+        ;;
+    *) echo "Usage: dx-light [ui|color|sync|off|status]" >&2; exit 2 ;;
+esac
+exec 9>"${XDG_RUNTIME_DIR:?No user runtime directory}/dx-light-control.lock"
+flock -x -w 20 9
+case "$1" in
+    color|sync)
+        # Refresh graphical-session variables when launched from the desktop.
+        if [ -n "${DISPLAY:-}" ]; then
+            systemctl --user import-environment DISPLAY
+        fi
+        if [ -n "${XAUTHORITY:-}" ]; then
+            systemctl --user import-environment XAUTHORITY
+        fi
+        if [ "$1" = color ]; then other=sync; else other=color; fi
+        systemctl --user stop "dx-light-$other.service"
+        systemctl --user start "dx-light-$1.service"
+        ;;
+    off)
+        systemctl --user stop dx-light-color.service dx-light-sync.service
+        "$data_dir/backends/quiklight" --config "$config_dir/sync.toml" --off
+        ;;
+esac
